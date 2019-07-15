@@ -12,7 +12,7 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
 use pocketmine\network\mcpe\protocol\AddPlayerPacket;
-use pocketmine\network\mcpe\protocol\EntityEventPacket;
+use pocketmine\network\mcpe\protocol\ActorEventPacket;
 use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
 use pocketmine\Player;
 use pocketmine\network\mcpe\protocol\PlayerListPacket;
@@ -34,12 +34,12 @@ class HumanBoss extends Human implements BossInterface
      */
     protected function sendSpawnPacket(Player $player) : void{
 
-       $uuid = UUID::fromRandom();
+        $uuid = UUID::fromRandom();
 
-       $pk = new PlayerListPacket();
-       $pk->type = PlayerListPacket::TYPE_ADD;
-       $pk->entries = [PlayerListEntry::createAdditionEntry($uuid, $this->id, 'Boss', $this->skin)];
-       $player->dataPacket($pk);
+        $pk = new PlayerListPacket();
+        $pk->type = PlayerListPacket::TYPE_ADD;
+        $pk->entries = [PlayerListEntry::createAdditionEntry($uuid, $this->id, 'Boss', $this->skin)];
+        $player->dataPacket($pk);
 
         $pk = new AddPlayerPacket();
         $pk->uuid = $uuid;
@@ -64,11 +64,11 @@ class HumanBoss extends Human implements BossInterface
 
     public function attack(EntityDamageEvent $source) : void{
         if($this->attackTime > 0 or $this->noDamageTicks > 0){
-              $lastCause = $this->getLastDamageCause();
-              if($lastCause !== null){
-                  $source->setCancelled();
-                  return;
-              }
+            $lastCause = $this->getLastDamageCause();
+            if($lastCause !== null){
+                $source->setCancelled();
+                return;
+            }
         }
         $this->setLastDamageCause($source);
 
@@ -81,7 +81,7 @@ class HumanBoss extends Human implements BossInterface
             $yaw = atan2($deltaX, $deltaZ);
             $this->knockBack($e, $source->getFinalDamage(), sin($yaw), cos($yaw), $source->getKnockBack());
         }
-        $pk = new EntityEventPacket();
+        $pk = new ActorEventPacket();
         $pk->entityRuntimeId = $this->getId();
         $pk->event = $this->isAlive() ? 2 : 3;
         Server::getInstance()->broadcastPacket($this->level->getPlayers(), $pk);
